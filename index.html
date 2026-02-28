@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GURURIZAN</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="shake-container">
+    <div id="flash-layer"></div>
+    <canvas id="gameCanvas"></canvas>
+    <!-- 前面用キャンバス（パーティクルなど） -->
+    <canvas id="fgCanvas"></canvas>
+
+    <div id="ui-layer">
+      <div class="header">
+        <div class="header-item left">
+          <div class="header-text">⏱ <span id="time">120</span></div>
+        </div>
+        <div class="header-item center">
+          <div class="target-cushion" id="target-box">
+            <div id="current-sum-box">いま: <span id="current">0</span> <span id="over-msg" class="over-text">OVER!</span>
+            </div>
+            <span id="target">7</span>
+          </div>
+        </div>
+        <div class="header-item right">
+          <div class="header-text">スコア: <span id="score">0</span></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div></div>
+        <button id="reset-btn">やり直す</button>
+      </div>
+
+      <!-- HITOFUDE BONUS メッセージ用 -->
+      <div id="bonus-message" class="bonus-message">HITOFUDE BONUS!</div>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <h2>GURURIZAN</h2>
+    <p>指で囲んで上部の数字を作ろう！<br>（ぐるり算）</p>
+    <div id="result-score"></div>
+    <div class="stage-select">
+      <button class="stage-btn" data-stage="1">ステージ 1</button>
+      <button class="stage-btn" data-stage="2">ステージ 2</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
