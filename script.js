@@ -27,10 +27,52 @@ let isOver = false, creatures = [], absorbingCreatures = [];
 let drawnPaths = [], currentPath = [], fadingPaths = [], particles = [];
 let isDrawing = false, timerInterval;
 let currentStage = 1;
+let isSoundOn = true;
 
 // BGMの設定
 let bgm = new Audio();
 bgm.loop = true;
+// ループが効かない環境（特定のiOS/Safariなど）への対策
+bgm.addEventListener('ended', function () {
+  this.currentTime = 0;
+  this.play();
+}, false);
+
+// SEの設定（Web Audio APIを使用して低遅延・安定化）
+const seSources = {
+  energy: 'energy.mp3',
+  splashes: 'splashes.mp3'
+};
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+const seBuffers = { energy: null, splashes: null };
+
+// サウンドのプリロード
+async function loadSESounds() {
+  if (!audioCtx) audioCtx = new AudioContext();
+  for (const key in seSources) {
+    try {
+      const response = await fetch(seSources[key]);
+      const arrayBuffer = await response.arrayBuffer();
+      seBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
+    } catch (e) {
+      console.log(`Failed to load SE: ${key}`, e);
+    }
+  }
+}
+
+function playSE(type) {
+  if (!isSoundOn || !audioCtx || !seBuffers[type]) return;
+
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = seBuffers[type];
+  source.connect(audioCtx.destination);
+  source.start(0);
+}
 
 const stageConfigs = {
   1: { timeLeft: 120, targetRange: [3, 8], creaturesCount: 15, subChance: 0, minCounts: { 1: 1 }, bgm: 'BGM1.mp3' },
@@ -147,6 +189,8 @@ class Creature {
         triggerShake(); // 目標のところまで吸い込まれたら揺らす
         // 吸い込まれた瞬間にキラキラを少し出す
         createParticles(this.absorbTargetX, this.absorbTargetY, 15);
+        // 数字に当たった時のSE
+        playSE('splashes');
       }
     } else {
       // 壁バウンド
@@ -341,6 +385,13 @@ function initGame(stageNum) {
   for (let i = 0; i < config.creaturesCount; i++) creatures.push(new Creature());
   overlay.style.display = 'none'; isPlaying = true;
 
+  // Web Audioの初期化とサウンドの読み込み（初回のみ）
+  if (!audioCtx) {
+    loadSESounds();
+  } else if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
   // BGM切り替えと再生
   const targetBgm = config.bgm;
   const currentBgm = bgm.src.split('/').pop();
@@ -363,7 +414,13 @@ function initGame(stageNum) {
 function endGame() {
   isPlaying = false; clearInterval(timerInterval);
   document.getElementById('result-score').innerText = `最終スコア: ${score}`;
-  overlay.style.display = 'flex';
+
+  // スコアが1以上なら名前入力
+  if (score > 0) {
+    document.getElementById('name-input-modal').style.display = 'flex';
+  } else {
+    overlay.style.display = 'flex';
+  }
 }
 
 function triggerShake() {
@@ -482,6 +539,116 @@ stageBtns.forEach(btn => {
   });
 });
 
+// 「ぐるり算とは」モーダルの制御
+const aboutModal = document.getElementById('about-modal');
+const aboutBtn = document.getElementById('about-btn');
+const closeAboutBtn = document.getElementById('close-about-btn');
+
+aboutBtn.addEventListener('click', () => {
+  aboutModal.style.display = 'flex';
+  // オーディオコンテキストの有効化
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  } else if (!audioCtx) {
+    loadSESounds();
+  }
+});
+
+closeAboutBtn.addEventListener('click', () => {
+  aboutModal.style.display = 'none';
+});
+
+// --- 追加: ランキング & 設定ロジック ---
+const rankingModal = document.getElementById('ranking-modal');
+const rankingListEl = document.getElementById('ranking-list');
+const nameInputModal = document.getElementById('name-input-modal');
+const settingsMenuModal = document.getElementById('settings-menu-modal');
+
+// ランキング保存
+function saveScore(name, stage, score) {
+  let ranking = JSON.parse(localStorage.getItem(`gururizan_ranking_${stage}`)) || [];
+  ranking.push({ name: name || "ななし", score: score, date: new Date().getTime() });
+  ranking.sort((a, b) => b.score - a.score);
+  ranking = ranking.slice(0, 20); // 20位まで
+  localStorage.setItem(`gururizan_ranking_${stage}`, JSON.stringify(ranking));
+}
+
+// ランキング表示
+function showRanking(stage) {
+  const ranking = JSON.parse(localStorage.getItem(`gururizan_ranking_${stage}`)) || [];
+  rankingListEl.innerHTML = '';
+
+  if (ranking.length === 0) {
+    rankingListEl.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">データがありません</div>';
+  } else {
+    ranking.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'ranking-item';
+      row.innerHTML = `
+        <span class="ranking-rank">${idx + 1}</span>
+        <span class="ranking-name">${item.name}</span>
+        <span class="ranking-score">${item.score}</span>
+      `;
+      rankingListEl.appendChild(row);
+    });
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.stage) === stage);
+  });
+  rankingModal.style.display = 'flex';
+}
+
+// イベントリスナー登録
+document.getElementById('submit-score-btn').addEventListener('click', () => {
+  const name = document.getElementById('player-name').value;
+  saveScore(name, currentStage, score);
+  nameInputModal.style.display = 'none';
+  overlay.style.display = 'flex';
+  showRanking(currentStage);
+});
+
+document.getElementById('settings-btn').addEventListener('click', () => {
+  settingsMenuModal.style.display = 'flex';
+});
+
+document.getElementById('close-settings-btn').addEventListener('click', () => {
+  settingsMenuModal.style.display = 'none';
+});
+
+document.getElementById('toggle-sound-btn').addEventListener('click', function () {
+  isSoundOn = !isSoundOn;
+  this.innerText = `${isSoundOn ? '🔊' : '🔈'} 音量: ${isSoundOn ? 'ON' : 'OFF'}`;
+  if (!isSoundOn) {
+    bgm.pause();
+  } else {
+    if (isPlaying) bgm.play();
+  }
+});
+
+document.getElementById('view-ranking-btn').addEventListener('click', () => {
+  settingsMenuModal.style.display = 'none';
+  showRanking(currentStage);
+});
+
+document.getElementById('close-ranking-btn').addEventListener('click', () => {
+  rankingModal.style.display = 'none';
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    showRanking(parseInt(btn.dataset.stage));
+  });
+});
+
+document.getElementById('back-to-title-btn').addEventListener('click', () => {
+  settingsMenuModal.style.display = 'none';
+  isPlaying = false;
+  clearInterval(timerInterval);
+  bgm.pause();
+  overlay.style.display = 'flex';
+});
+
 function isPointInPath(x, y, pathCoords) {
   let inside = false;
   for (let i = 0, j = pathCoords.length - 1; i < pathCoords.length; j = i++) {
@@ -533,6 +700,9 @@ function checkEnclosure(path) {
 
       // 揃った時に数字の場所からキラキラを出す
       createParticles(targetX, targetY, 30);
+
+      // 吸い寄せ開始のSE
+      playSE('energy');
 
       let toAbsorb = creatures.filter(c => c.isCaptured);
       toAbsorb.forEach(c => {

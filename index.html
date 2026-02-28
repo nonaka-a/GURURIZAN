@@ -6,6 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GURURIZAN</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.visualstudio.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+  <!-- 別の信頼できるソースとして通常の Google Fonts URL も使用 -->
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -18,7 +23,9 @@
     <div id="ui-layer">
       <div class="header">
         <div class="header-item left">
-          <div class="header-text">⏱ <span id="time">120</span></div>
+          <div class="ui-cushion time-box">
+            <span class="ui-icon">⏱</span><span id="time">120</span>
+          </div>
         </div>
         <div class="header-item center">
           <div class="target-cushion" id="target-box">
@@ -28,17 +35,59 @@
           </div>
         </div>
         <div class="header-item right">
-          <div class="header-text">スコア: <span id="score">0</span></div>
+          <div class="ui-cushion score-box">
+            <span class="ui-label">SCORE: </span><span id="score">0</span>
+          </div>
         </div>
       </div>
 
       <div class="footer">
-        <div></div>
+        <button id="settings-btn" class="settings-btn">⚙️</button>
         <button id="reset-btn">やり直す</button>
       </div>
 
-      <!-- HITOFUDE BONUS メッセージ用 -->
-      <div id="bonus-message" class="bonus-message">HITOFUDE BONUS!</div>
+      <!-- HITOFUDE BONUS メッセージ用（2行に変更） -->
+      <div id="bonus-message" class="bonus-message">
+        HITOFUDE<br>BONUS!
+      </div>
+    </div>
+  </div>
+
+  <!-- 名前入力モーダル -->
+  <div id="name-input-modal" class="modal-overlay">
+    <div class="modal-content pop-in">
+      <h3>NEW RECORD!</h3>
+      <p>名前を入力してね！</p>
+      <input type="text" id="player-name" maxlength="10" placeholder="なまえ">
+      <button id="submit-score-btn" class="close-btn">登録する</button>
+    </div>
+  </div>
+
+  <!-- ランキングモーダル -->
+  <div id="ranking-modal" class="modal-overlay">
+    <div class="modal-content pop-in ranking-content">
+      <h3 id="ranking-title">RANKING</h3>
+      <div class="ranking-tabs">
+        <button class="tab-btn active" data-stage="1">Stage 1</button>
+        <button class="tab-btn" data-stage="2">Stage 2</button>
+      </div>
+      <div class="ranking-list" id="ranking-list">
+        <!-- JSで挿入 -->
+      </div>
+      <button id="close-ranking-btn" class="close-btn">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 設定メニューモーダル -->
+  <div id="settings-menu-modal" class="modal-overlay">
+    <div class="modal-content pop-in">
+      <h3>MENU</h3>
+      <div class="menu-list">
+        <button id="toggle-sound-btn" class="menu-item-btn sound-btn">🔊 音量: ON</button>
+        <button id="view-ranking-btn" class="menu-item-btn ranking-btn">🏆 ランキング</button>
+        <button id="back-to-title-btn" class="menu-item-btn danger">🏠 タイトルへ</button>
+      </div>
+      <button id="close-settings-btn" class="close-btn">戻る</button>
     </div>
   </div>
 
@@ -49,6 +98,34 @@
     <div class="stage-select">
       <button class="stage-btn" data-stage="1">ステージ 1</button>
       <button class="stage-btn" data-stage="2">ステージ 2</button>
+      <button id="about-btn" class="about-btn">「ぐるり算」とは</button>
+    </div>
+  </div>
+  <div id="about-modal">
+    <div class="modal-content">
+      <img src="nakano.jpg" alt="数学者 中野まさし氏" class="nakano-img">
+
+      <div class="text-block">
+        <h3>「ぐるり算」とは</h3>
+        <p>かの有名な数学者、中野まさし氏が、水面に浮かぶジュズダマの群れを「まとまり」として捉えたことに端を発する、彼独自の計算手法である。</p>
+        <p>
+          氏は「一を積み重ねる愚を捨て、多を一と成す。それこそが計算の真髄である」と説き、一括りに計算することで飛躍的な効率化を実現した。晩年、彼が遺した「ぐるり算の概念は、万物に通ず」という言葉は、今なお数学界のみならず、現代のあらゆる効率化理論の礎としてあまりにも有名である。
+        </p>
+      </div>
+
+      <hr>
+
+      <div class="text-block english">
+        <h3>What is "Gururizan"?</h3>
+        <p>This unique calculation method originated from the renowned mathematician Masashi Nakano, inspired by his
+          observation of floating Job's Tears as a single "cluster."</p>
+        <p>Nakano taught, "Abandon the folly of incremental addition; unite the many into one. That is the essence of
+          calculation." By calculating groups as entities, he achieved exponential efficiency. In his later years, his
+          words, "The concept of Gururizan transcends all things," became famous not only in mathematics but as a
+          cornerstone of modern efficiency theories.</p>
+      </div>
+
+      <button id="close-about-btn" class="close-btn">戻る</button>
     </div>
   </div>
 
