@@ -24,6 +24,8 @@ const colors = {
 
 let isPlaying = false, score = 0, timeLeft = 120, targetNum = 7, currentSum = 0;
 let bonusCombo = 0;
+let isTutorial = false;
+let tutorialStep = 0;
 let isOver = false, creatures = [], absorbingCreatures = [];
 let drawnPaths = [], currentPath = [], fadingPaths = [], particles = [];
 let isDrawing = false, timerInterval;
@@ -88,44 +90,62 @@ function resize() {
 window.addEventListener('resize', resize); resize();
 
 class Creature {
-  constructor() {
+  constructor(fixedValue = null, onScreen = false) {
     const config = stageConfigs[currentStage];
 
-    // 盤面上の各数値の数をカウント (足し算・引き算含む)
-    const countV1 = creatures.filter(c => !c.dead && c.value === 1).length;
-    const countHigh = creatures.filter(c => !c.dead && (c.value === 4 || c.value === 5) && c.type === 'circle').length;
-
-    if (config.minCounts[1] && countV1 < config.minCounts[1]) {
-      // 「1」が不足している場合
-      this.value = 1;
-      // 1の場合はステージ設定に合わせてタイプを決める
-      this.type = (Math.random() < config.subChance) ? 'rhombus' : 'circle';
-    } else if (config.minCounts['high'] && countHigh < config.minCounts['high']) {
-      // 高数値(4, 5)が不足している場合
-      this.value = Math.random() < 0.5 ? 4 : 5;
+    if (fixedValue !== null) {
+      this.value = fixedValue;
+      this.type = 'circle';
+    } else if (isTutorial) {
+      if (tutorialStep === 1) {
+        this.value = 3;
+      } else if (tutorialStep === 2) {
+        this.value = Math.floor(Math.random() * 3) + 3; // 3, 4, 5
+      }
       this.type = 'circle';
     } else {
-      // 通常生成
-      this.value = Math.floor(Math.random() * 5) + 1;
-      this.type = (Math.random() < config.subChance) ? 'rhombus' : 'circle';
+      // 盤面上の各数値の数をカウント (足し算・引き算含む)
+      const countV1 = creatures.filter(c => !c.dead && c.value === 1).length;
+      const countHigh = creatures.filter(c => !c.dead && (c.value === 4 || c.value === 5) && c.type === 'circle').length;
+
+      if (config.minCounts[1] && countV1 < config.minCounts[1]) {
+        // 「1」が不足している場合
+        this.value = 1;
+        // 1の場合はステージ設定に合わせてタイプを決める
+        this.type = (Math.random() < config.subChance) ? 'rhombus' : 'circle';
+      } else if (config.minCounts['high'] && countHigh < config.minCounts['high']) {
+        // 高数値(4, 5)が不足している場合
+        this.value = Math.random() < 0.5 ? 4 : 5;
+        this.type = 'circle';
+      } else {
+        // 通常生成
+        this.value = Math.floor(Math.random() * 5) + 1;
+        this.type = (Math.random() < config.subChance) ? 'rhombus' : 'circle';
+      }
     }
 
     this.colorInfo = colors[this.value];
     this.baseRadius = 20;
     this.radius = this.baseRadius;
 
-    // 出現位置を画面外に設定（上下左右ランダム）
-    const side = Math.floor(Math.random() * 4);
     let startX, startY;
-    const margin = 50;
-    if (side === 0) { // 上
-      startX = Math.random() * width; startY = -margin;
-    } else if (side === 1) { // 下
-      startX = Math.random() * width; startY = height + margin;
-    } else if (side === 2) { // 左
-      startX = -margin; startY = Math.random() * height;
-    } else { // 右
-      startX = width + margin; startY = Math.random() * height;
+    if (onScreen) {
+      // チュートリアルなど、すぐに出現させたい場合
+      startX = Math.random() * (width - 200) + 100;
+      startY = Math.random() * (height - 300) + 150;
+    } else {
+      // 出現位置を画面外に設定（上下左右ランダム）
+      const side = Math.floor(Math.random() * 4);
+      const margin = 50;
+      if (side === 0) { // 上
+        startX = Math.random() * width; startY = -margin;
+      } else if (side === 1) { // 下
+        startX = Math.random() * width; startY = height + margin;
+      } else if (side === 2) { // 左
+        startX = -margin; startY = Math.random() * height;
+      } else { // 右
+        startX = width + margin; startY = Math.random() * height;
+      }
     }
 
     this.segments = [];
@@ -375,9 +395,10 @@ function resolveCollisions() {
   }
 }
 
-function initGame(stageNum) {
+function initGame(stageNum, tutorialMode = false) {
   currentStage = stageNum || 1;
   const config = stageConfigs[currentStage];
+  isTutorial = tutorialMode;
 
   score = 0; timeLeft = config.timeLeft; currentSum = 0; bonusCombo = 0; isOver = false;
   isDrawing = false; // 描画状態をリセット
@@ -389,8 +410,30 @@ function initGame(stageNum) {
   bonusEl.classList.remove('bonus-pop');
   bonusEl.innerHTML = '';
 
-  updateUI(); setNewTarget();
-  for (let i = 0; i < config.creaturesCount; i++) creatures.push(new Creature());
+  // チュートリアルUIのリセット
+  document.getElementById('tutorial-layer').style.display = isTutorial ? 'flex' : 'none';
+  document.getElementById('tutorial-mask').style.display = isTutorial ? 'block' : 'none';
+  document.getElementById('tutorial-next-btn').style.display = 'none';
+  document.getElementById('tutorial-end-btn').style.display = 'none';
+  document.getElementById('tutorial-mask').classList.remove('show');
+  document.body.classList.toggle('tutorial-active', isTutorial);
+
+  if (isTutorial) {
+    tutorialStep = 1;
+    targetNum = 3;
+    timeLeft = 999;
+    document.getElementById('tutorial-text').innerHTML = "上の数「3」に合うように、輪を描いてボールを囲ってください<br><span class='eng-sub'>Draw a circle to enclose the balls to match the target number '3' above</span>";
+    document.getElementById('tutorial-mask').classList.add('show');
+  } else {
+    setNewTarget();
+  }
+
+  updateUI();
+  elTime.innerText = isTutorial ? "∞" : timeLeft;
+  elTarget.innerText = targetNum;
+
+  const count = isTutorial ? 3 : config.creaturesCount;
+  for (let i = 0; i < count; i++) creatures.push(new Creature(null, isTutorial));
   overlay.style.display = 'none'; isPlaying = true;
 
   // Web Audioの初期化とサウンドの読み込み（初回のみ）
@@ -400,15 +443,19 @@ function initGame(stageNum) {
     audioCtx.resume();
   }
 
-  // BGM切り替えと再生
-  const targetBgm = config.bgm;
-  const currentBgm = bgm.src.split('/').pop();
-  if (currentBgm !== targetBgm) {
-    bgm.src = targetBgm;
-    bgm.load();
-    bgm.play().catch(e => console.log("BGM play failed:", e));
-  } else if (bgm.paused) {
-    bgm.play().catch(e => console.log("BGM play failed:", e));
+  if (isTutorial) {
+    bgm.pause();
+  } else {
+    // BGM切り替えと再生
+    const targetBgm = config.bgm;
+    const currentBgm = bgm.src.split('/').pop();
+    if (currentBgm !== targetBgm) {
+      bgm.src = targetBgm;
+      bgm.load();
+      bgm.play().catch(e => console.log("BGM play failed:", e));
+    } else if (bgm.paused) {
+      bgm.play().catch(e => console.log("BGM play failed:", e));
+    }
   }
 
   clearInterval(timerInterval);
@@ -664,6 +711,19 @@ document.getElementById('back-to-title-btn').addEventListener('click', () => {
   overlay.style.display = 'flex';
 });
 
+document.getElementById('tutorial-btn').addEventListener('click', () => {
+  initGame(1, true); // ステージ1設定ベースでチュートリアル開始
+});
+
+document.getElementById('tutorial-end-btn').addEventListener('click', () => {
+  document.getElementById('tutorial-layer').style.display = 'none';
+  document.getElementById('tutorial-mask').style.display = 'none';
+  document.body.classList.remove('tutorial-active');
+  overlay.style.display = 'flex';
+  isPlaying = false;
+  bgm.pause();
+});
+
 function isPointInPath(x, y, pathCoords) {
   let inside = false;
   for (let i = 0, j = pathCoords.length - 1; i < pathCoords.length; j = i++) {
@@ -742,7 +802,30 @@ function checkEnclosure(path) {
       });
 
       currentSum = 0; drawnPaths = [];
-      setNewTarget();
+
+      if (isTutorial) {
+        if (tutorialStep === 1) {
+          tutorialStep = 2;
+          targetNum = 8;
+          elTarget.innerText = targetNum;
+          document.getElementById('tutorial-text').innerHTML = "間違えて囲ってしまった時は「やり直す」ボタン<br><span class='eng-sub'>If you enclose the wrong balls, use the 'Retry' button</span>";
+          // ステップ2用にクリーチャー補充（少なくとも2つは4を出す）
+          creatures = [];
+          for (let i = 0; i < 8; i++) {
+            // 第1引数に数値を指定することで、その数値と節の数を一致させる
+            let c = new Creature(i < 2 ? 4 : null, true);
+            creatures.push(c);
+          }
+        } else if (tutorialStep === 2) {
+          tutorialStep = 3;
+          setTimeout(() => {
+            document.getElementById('tutorial-text').innerHTML = "チュートリアルは以上です<br><span class='eng-sub'>Tutorial Completed</span>";
+            document.getElementById('tutorial-end-btn').style.display = 'inline-block';
+          }, 1000);
+        }
+      } else {
+        setNewTarget();
+      }
 
     } else if (currentSum > targetNum) {
       isOver = true;

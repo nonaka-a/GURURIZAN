@@ -51,6 +51,16 @@
         HITOFUDE<br>BONUS!
       </div>
     </div>
+
+    <!-- チュートリアル用レイヤー -->
+    <div id="tutorial-mask" style="display: none;"></div>
+    <div id="tutorial-layer" style="display: none;">
+      <div class="tutorial-message-box">
+        <div id="tutorial-text"></div>
+        <button id="tutorial-next-btn" class="close-btn" style="display: none;">次へ</button>
+        <button id="tutorial-end-btn" class="close-btn" style="display: none;">戻る</button>
+      </div>
+    </div>
   </div>
 
   <!-- 名前入力モーダル -->
@@ -101,6 +111,7 @@
     <img src="logo.png" alt="GURURIZAN" class="title-logo">
     <div id="result-score"></div>
     <div class="stage-select">
+      <button class="stage-btn tutorial-btn" id="tutorial-btn">チュートリアル</button>
       <button class="stage-btn" data-stage="1">ステージ 1</button>
       <button class="stage-btn" data-stage="2">ステージ 2</button>
       <button id="about-btn" class="about-btn">「ぐるり算」とは</button>

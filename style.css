@@ -55,7 +55,11 @@ body {
   flex-direction: column;
   justify-content: space-between;
   z-index: 1;
-  /* fgCanvas(z-index:5)より奥に配置 */
+}
+
+body.tutorial-active #ui-layer {
+  z-index: 1550 !important;
+  /* tutorial-mask (1500) より上に */
 }
 
 .header {
@@ -300,7 +304,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 25px;
-  margin-top: 30px;
+  margin-top: 10px;
   align-items: center;
 }
 
@@ -350,7 +354,7 @@ body:has(#overlay:not([style*="display: none"])) #ui-layer {
   max-width: 80%;
   width: 600px;
   height: auto;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
   animation: logoBounce 3s ease-in-out infinite;
 }
@@ -838,4 +842,128 @@ hr {
 
 .close-btn.secondary:active {
   box-shadow: 0 2px 0 #616161;
+}
+
+/* --- チュートリアル関連 --- */
+.stage-btn.tutorial-btn {
+  background: linear-gradient(to bottom, #ff80ab, #f06292);
+  box-shadow: 0 6px 0 #ad1457, 0 10px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 0px;
+  padding: 12px 30px;
+  /* サイズを少し小さく */
+  font-size: 20px;
+  /* フォントも少し小さく */
+}
+
+#tutorial-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4000;
+  /* メッセージとボタンを最前面に */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#tutorial-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  /* 少し濃く */
+  display: none;
+  z-index: 1500;
+  /* ボール(1505)より下に */
+}
+
+#tutorial-mask.show {
+  display: block;
+}
+
+.tutorial-message-box {
+  background: transparent;
+  /* 座布団なし */
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  max-width: 80%;
+  text-align: center;
+  pointer-events: auto;
+  box-shadow: none;
+  position: absolute;
+  bottom: 25%;
+  z-index: 3000;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#tutorial-text {
+  font-size: 28px;
+  /* 少し大きく */
+  font-weight: 900;
+  color: white;
+  /* 白文字 */
+  margin-bottom: 30px;
+  line-height: 1.6;
+  font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W6', sans-serif;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#tutorial-text .eng-sub {
+  display: block;
+  font-size: 18px;
+  opacity: 0.8;
+  font-weight: normal;
+  margin-top: 10px;
+  font-family: 'Lilita One', cursive;
+}
+
+/* チュートリアル中は他のUIを隠す */
+body.tutorial-active .time-box,
+body.tutorial-active .score-box,
+body.tutorial-active .settings-btn {
+  display: none !important;
+}
+
+/* チュートリアル中にボール（キャンバス）を暗くしない */
+body.tutorial-active #gameCanvas,
+body.tutorial-active #fgCanvas {
+  z-index: 1505 !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* やりなおすボタンを右側に保持 */
+body.tutorial-active #reset-btn {
+  margin-left: auto;
+}
+
+/* 目標数値を光らせる */
+body.tutorial-active .header-item.center {
+  z-index: 1600 !important;
+  position: relative;
+}
+
+body.tutorial-active .target-cushion {
+  box-shadow: 0 0 40px 15px rgba(255, 255, 255, 0.6), 0 6px 12px rgba(0, 0, 0, 0.3);
+  border: 10px solid #03a9f4;
+  /* 太く明るい青に */
+  transform: translateX(-50%) scale(1.15);
+  /* 少し大きく */
+  background: white;
+  color: #01579b;
+}
+
+#tutorial-layer #tutorial-mask.show {
+  display: block;
 }
