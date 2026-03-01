@@ -43,8 +43,8 @@ bgm.addEventListener('ended', function () {
 
 // SEの設定（Web Audio APIを使用して低遅延・安定化）
 const seSources = {
-  energy: 'energy.mp3',
-  splashes: 'splashes.mp3'
+  energy: 'assets/energy.mp3',
+  splashes: 'assets/splashes.mp3'
 };
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
@@ -78,8 +78,8 @@ function playSE(type) {
 }
 
 const stageConfigs = {
-  1: { timeLeft: 120, targetRange: [3, 8], creaturesCount: 15, subChance: 0, minCounts: { 1: 1 }, bgm: 'BGM1.mp3' },
-  2: { timeLeft: 120, targetRange: [3, 8], creaturesCount: 15, subChance: 0.3, minCounts: { 1: 1, 'high': 2 }, bgm: 'BGM2.mp3' }
+  1: { timeLeft: 120, targetRange: [3, 8], creaturesCount: 15, subChance: 0, minCounts: { 1: 1 }, bgm: 'assets/BGM1.mp3' },
+  2: { timeLeft: 120, targetRange: [3, 8], creaturesCount: 15, subChance: 0.3, minCounts: { 1: 1, 'high': 2 }, bgm: 'assets/BGM2.mp3' }
 };
 
 function resize() {
@@ -639,11 +639,21 @@ function showRanking(stage) {
     rankingListEl.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">データがありません</div>';
   } else {
     ranking.forEach((item, idx) => {
+      // XSS対策: 名前をエスケープして表示
+      const safeName = item.name.replace(/[&<>"']/g, function (match) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[match];
+      });
       const row = document.createElement('div');
       row.className = 'ranking-item';
       row.innerHTML = `
         <span class="ranking-rank">${idx + 1}</span>
-        <span class="ranking-name">${item.name}</span>
+        <span class="ranking-name">${safeName}</span>
         <span class="ranking-score">${item.score}</span>
       `;
       rankingListEl.appendChild(row);

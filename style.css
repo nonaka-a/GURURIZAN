@@ -2,7 +2,7 @@ body {
   margin: 0;
   overflow: hidden;
   background-color: #f0f0f0;
-  background-image: url('BG.jpg');
+  background-image: url('assets/BG.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
