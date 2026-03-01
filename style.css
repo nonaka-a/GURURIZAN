@@ -12,6 +12,13 @@ body {
   touch-action: none;
   width: 100vw;
   height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input {
+  user-select: auto;
+  -webkit-user-select: auto;
 }
 
 #shake-container {
@@ -231,8 +238,8 @@ body.tutorial-active #ui-layer {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  pointer-events: auto;
-  /* ボタンをクリック可能にする */
+  pointer-events: none;
+  /* 子要素のボタンのみクリック可能にするため、親は none にする */
 }
 
 #reset-btn,
@@ -881,6 +888,7 @@ hr {
   display: none;
   z-index: 1500;
   /* ボール(1505)より下に */
+  pointer-events: none;
 }
 
 #tutorial-mask.show {
@@ -895,13 +903,17 @@ hr {
   padding: 0;
   max-width: 80%;
   text-align: center;
-  pointer-events: auto;
+  pointer-events: none;
   box-shadow: none;
   position: absolute;
   bottom: 25%;
   z-index: 3000;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.tutorial-message-box button {
+  pointer-events: auto;
 }
 
 #tutorial-text {
