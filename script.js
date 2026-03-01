@@ -23,6 +23,7 @@ const colors = {
 };
 
 let isPlaying = false, score = 0, timeLeft = 120, targetNum = 7, currentSum = 0;
+let bonusCombo = 0;
 let isOver = false, creatures = [], absorbingCreatures = [];
 let drawnPaths = [], currentPath = [], fadingPaths = [], particles = [];
 let isDrawing = false, timerInterval;
@@ -378,9 +379,16 @@ function initGame(stageNum) {
   currentStage = stageNum || 1;
   const config = stageConfigs[currentStage];
 
-  score = 0; timeLeft = config.timeLeft; currentSum = 0; isOver = false;
+  score = 0; timeLeft = config.timeLeft; currentSum = 0; bonusCombo = 0; isOver = false;
+  isDrawing = false; // 描画状態をリセット
   creatures = []; absorbingCreatures = []; drawnPaths = []; currentPath = [];
   fadingPaths = []; particles = [];
+
+  // ボーナス演出のリセット
+  const bonusEl = document.getElementById('bonus-message');
+  bonusEl.classList.remove('bonus-pop');
+  bonusEl.innerHTML = '';
+
   updateUI(); setNewTarget();
   for (let i = 0; i < config.creaturesCount; i++) creatures.push(new Creature());
   overlay.style.display = 'none'; isPlaying = true;
@@ -417,6 +425,7 @@ function endGame() {
 
   // スコアが1以上なら名前入力
   if (score > 0) {
+    document.getElementById('final-score-value').innerText = score;
     document.getElementById('name-input-modal').style.display = 'flex';
   } else {
     overlay.style.display = 'flex';
@@ -430,8 +439,9 @@ function triggerShake() {
   container.classList.add('shake-anim');
 }
 
-function showBonus() {
+function showBonus(combo) {
   const el = document.getElementById('bonus-message');
+  el.innerHTML = combo > 1 ? `HITOFUDE<br>BONUS! x${combo}` : `HITOFUDE<br>BONUS!`;
   el.classList.remove('bonus-pop');
   void el.offsetWidth;
   el.classList.add('bonus-pop');
@@ -505,7 +515,7 @@ function setNewTarget() {
 }
 
 function resetCurrent() {
-  currentSum = 0; isOver = false; drawnPaths = [];
+  currentSum = 0; bonusCombo = 0; isOver = false; drawnPaths = [];
   creatures.forEach(c => c.isCaptured = false);
   elOverMsg.style.display = 'none'; elCurrent.style.color = 'black';
   document.getElementById('current-sum-box').style.borderColor = '#ccc';
@@ -608,6 +618,11 @@ document.getElementById('submit-score-btn').addEventListener('click', () => {
   showRanking(currentStage);
 });
 
+document.getElementById('cancel-score-btn').addEventListener('click', () => {
+  nameInputModal.style.display = 'none';
+  overlay.style.display = 'flex';
+});
+
 document.getElementById('settings-btn').addEventListener('click', () => {
   settingsMenuModal.style.display = 'flex';
 });
@@ -688,9 +703,11 @@ function checkEnclosure(path) {
     if (currentSum === targetNum) {
       // 1つの囲みで目標達成し、かつ2匹以上を同時に捕まえていた場合はボーナス
       if (drawnPaths.length === 1 && currentSum === sumChange && newlyCaptured.length >= 2) {
-        score += targetNum * 2;
-        showBonus(); // HITOFUDEボーナス表示
+        bonusCombo++;
+        score += targetNum * 2 * bonusCombo;
+        showBonus(bonusCombo); // HITOFUDEボーナス表示
       } else {
+        bonusCombo = 0;
         score += targetNum;
       }
 

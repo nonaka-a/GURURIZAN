@@ -334,6 +334,39 @@ body {
   z-index: 10;
 }
 
+/* タイトル画面（オーバーレイ）表示時はゲームUIを隠す */
+#overlay[style*="display: flex"]~#ui-layer,
+#overlay[style*="display: flex"]+#ui-layer,
+#overlay:not([style*="display: none"])~#ui-layer {
+  display: none !important;
+}
+
+/* あるいは、よりシンプルにスクリプト制御とHTML順序に依存しない形に */
+body:has(#overlay:not([style*="display: none"])) #ui-layer {
+  display: none !important;
+}
+
+.title-logo {
+  max-width: 80%;
+  width: 600px;
+  height: auto;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+  animation: logoBounce 3s ease-in-out infinite;
+}
+
+@keyframes logoBounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 #result-score {
   font-size: 48px;
   margin: 20px 0;
@@ -759,4 +792,50 @@ hr {
 #player-name:focus {
   border-color: #388e3c;
   background: #f9fff9;
+}
+
+/* モーダル内のスコア表示 */
+.modal-score-display {
+  font-family: 'Lilita One', cursive;
+  font-size: 48px;
+  color: #f57c00;
+  margin: 10px 0;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* モーダル内のボタングループ */
+.modal-btn-group {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+.modal-btn-group .close-btn {
+  margin-top: 0;
+  /* ラッパーで制御するためリセット */
+  flex: 1;
+  max-width: 200px;
+  white-space: nowrap;
+}
+
+/* プライマリボタン（登録する）の色付きスタイル */
+.close-btn.primary {
+  background: linear-gradient(to bottom, #81c784, #4caf50);
+  box-shadow: 0 6px 0 #388e3c;
+}
+
+.close-btn.primary:active {
+  box-shadow: 0 2px 0 #2e7d32;
+}
+
+/* セカンダリボタン（登録しない）のスタイル */
+.close-btn.secondary {
+  background: #9e9e9e;
+  box-shadow: 0 6px 0 #757575;
+}
+
+.close-btn.secondary:active {
+  box-shadow: 0 2px 0 #616161;
 }

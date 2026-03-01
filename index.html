@@ -57,9 +57,15 @@
   <div id="name-input-modal" class="modal-overlay">
     <div class="modal-content pop-in">
       <h3>NEW RECORD!</h3>
+      <div class="modal-score-display">
+        SCORE: <span id="final-score-value">0</span>
+      </div>
       <p>名前を入力してね！</p>
       <input type="text" id="player-name" maxlength="10" placeholder="なまえ">
-      <button id="submit-score-btn" class="close-btn">登録する</button>
+      <div class="modal-btn-group">
+        <button id="submit-score-btn" class="close-btn primary">登録する</button>
+        <button id="cancel-score-btn" class="close-btn secondary">登録しない</button>
+      </div>
     </div>
   </div>
 
@@ -92,8 +98,7 @@
   </div>
 
   <div id="overlay">
-    <h2>GURURIZAN</h2>
-    <p>指で囲んで上部の数字を作ろう！<br>（ぐるり算）</p>
+    <img src="logo.png" alt="GURURIZAN" class="title-logo">
     <div id="result-score"></div>
     <div class="stage-select">
       <button class="stage-btn" data-stage="1">ステージ 1</button>
