@@ -32,6 +32,11 @@ let isDrawing = false, timerInterval;
 let currentStage = 1;
 let isSoundOn = true;
 
+// フレームレート制御用
+let lastTime = 0;
+const targetFPS = 60;
+const frameInterval = 1000 / targetFPS;
+
 // BGMの設定
 let bgm = new Audio();
 bgm.loop = true;
@@ -463,6 +468,8 @@ function initGame(stageNum, tutorialMode = false) {
     timeLeft--; elTime.innerText = timeLeft;
     if (timeLeft <= 0) endGame();
   }, 1000);
+  
+  lastTime = performance.now();
   requestAnimationFrame(loop);
 }
 
@@ -848,8 +855,17 @@ function checkEnclosure(path) {
   }
 }
 
-function loop() {
+function loop(timestamp) {
   if (!isPlaying) return;
+  requestAnimationFrame(loop);
+
+  if (!timestamp) timestamp = performance.now();
+  const deltaTime = timestamp - lastTime;
+
+  if (deltaTime < frameInterval) return;
+
+  lastTime = timestamp - (deltaTime % frameInterval);
+
   ctx.clearRect(0, 0, width, height);
 
   ctx.lineWidth = 8;
@@ -902,6 +918,4 @@ function loop() {
   drawParticles(); // 最後に描画して数字（UI）より手前に出す
 
   absorbingCreatures = absorbingCreatures.filter(c => !c.dead);
-
-  requestAnimationFrame(loop);
 }
