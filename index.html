@@ -20,10 +20,23 @@
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XE2BKG5S67"></script>
 <script>
+  // 合言葉 「?me」 がURLにあれば除外フラグを保存
+  if (window.location.search.includes('me')) {
+      localStorage.setItem('exclude_me', 'true');
+      alert('このデバイスを計測から除外しました');
+  }
+
+  // 除外フラグがある場合、GA4を無効化
+  if (localStorage.getItem('exclude_me')) {
+      window['ga-disable-G-XE2BKG5S67'] = true;
+  }
+</script>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XE2BKG5S67"></script>
+<script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-XE2BKG5S67');
 </script>
 </head>
