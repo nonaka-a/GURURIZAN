@@ -292,6 +292,30 @@ body.tutorial-active #ui-layer {
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
 
+.noa-games-btn {
+  background: linear-gradient(to bottom, #26a69a, #00897b);
+  box-shadow: 0 6px 0 #004d40, 0 10px 15px rgba(0, 0, 0, 0.2);
+  margin-top: 5px;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-weight: 900;
+  border-radius: 50px;
+  border: none;
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+  transition: all 0.1s;
+  font-family: 'Lilita One', 'Arial Black', 'Impact', 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W6', sans-serif;
+}
+
+.noa-games-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
 
 #reset-btn {
   background-color: #0288d1;
