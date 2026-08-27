@@ -334,11 +334,16 @@ body.tutorial-active #ui-layer {
 .stage-select {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
   margin-top: 10px;
   align-items: center;
 }
 
+.stage-btn-row {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
 .over-text {
   color: red;
   font-weight: bold;
